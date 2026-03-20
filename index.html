@@ -29,6 +29,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .nav-btn[data-region="midwest"].active{color:var(--midwest);border-color:var(--midwest);background:var(--midwest-bg)}
 .nav-btn[data-region="final4"].active{color:var(--gold);border-color:var(--gold);background:var(--gold-bg)}
 .nav-btn[data-region="schedule"].active{color:var(--win);border-color:var(--win);background:rgba(52,211,153,0.08)}
+.nav-btn[data-region="jasmeen"].active{color:#f472b6;border-color:#f472b6;background:rgba(244,114,182,0.08)}
 .content{max-width:1200px;margin:0 auto;padding:32px 24px 64px}
 .panel{display:none;animation:fadeIn 0.3s ease}.panel.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -118,6 +119,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   <button class="nav-btn" data-region="west">West</button>
   <button class="nav-btn" data-region="midwest">Midwest</button>
   <button class="nav-btn" data-region="final4">Final Four</button>
+  <button class="nav-btn" data-region="jasmeen">Jasmeen</button>
 </nav>
 <div class="content" id="content"></div>
 <div class="footer">Lun & Klun Offense — March Madness 2026</div>
@@ -235,8 +237,41 @@ function renderF4(){return`<div class="region-title-bar"><span class="region-tit
 </div><div class="championship-card"><div class="champ-trophy-lg">🏆</div><div class="champ-ey">2026 National Champion</div><div class="champ-nm">Michigan</div><div class="champ-sd">#1 seed • Midwest Region</div><div class="champ-path"><div class="champ-path-label">Championship Path</div><div class="champ-path-teams">${['Howard','Georgia','Texas Tech','Iowa St.','Arizona','Houston'].map(t=>`<span class="path-chip">→ ${t}</span>`).join('')}</div></div></div>
 <div class="f4-semis"><div class="f4-game"><div class="f4-game-label">National Championship</div><div class="f4tr l"><span class="seed">2</span><span class="tn">Houston</span><span class="mc-region-tag tag-south">south</span></div><div class="f4tr w"><span class="seed">1</span><span class="tn">Michigan</span><span class="mc-region-tag tag-midwest">midwest</span><span class="check">✓</span></div></div></div></div>`;}
 
+const J=[
+{mascot:"Rams",team:"VCU",seed:11,opp:"North Carolina",oppSeed:6,region:"south",result:"W",score:"82-78",pk:"VCU by mascot vibes"},
+{mascot:"Wolverines",team:"Michigan",seed:1,opp:"Howard",oppSeed:16,region:"midwest",result:"W",score:"101-80",pk:"Wolverines are scary"},
+{mascot:"Cougars",team:"BYU",seed:6,opp:"Texas",oppSeed:11,region:"west",result:"L",score:"71-79",pk:"Cougars > Longhorns"},
+{mascot:"Aggies",team:"Texas A&M",seed:10,opp:"Saint Mary's",oppSeed:7,region:"south",result:"W",score:"63-50",pk:"Aggies are tough"},
+{mascot:"Fighting Illini",team:"Illinois",seed:3,opp:"Penn",oppSeed:14,region:"south",result:"W",score:"105-70",pk:"Fighting anything wins"},
+{mascot:"Billikens",team:"Saint Louis",seed:9,opp:"Georgia",oppSeed:8,region:"midwest",result:"W",score:"102-77",pk:"Nobody knows what a Billiken is = chaos energy"},
+{mascot:"Bulldogs",team:"Gonzaga",seed:3,opp:"Kennesaw St.",oppSeed:14,region:"west",result:"W",score:"73-64",pk:"Bulldogs are reliable"},
+{mascot:"Cougars",team:"Houston",seed:2,opp:"Idaho",oppSeed:15,region:"south",result:"W",score:"78-47",pk:"Cougars redemption arc"}
+];
+
+function renderJasmeen(){
+  const wins=J.filter(j=>j.result==='W').length,losses=J.filter(j=>j.result==='L').length;
+  const pct=Math.round(wins/J.length*100);
+  let h=`<div class="region-title-bar"><span class="region-title" style="color:#f472b6">Jasmeen's Mascot Bets</span><span class="region-site">Picking winners by mascot energy</span></div>`;
+  h+=`<div class="stats-bar">
+<div class="stat-card"><div class="stat-value" style="color:#f472b6">${wins}-${losses}</div><div class="stat-label">Record</div></div>
+<div class="stat-card"><div class="stat-value" style="color:${pct>=70?'var(--win)':'var(--loss)'}">${pct}%</div><div class="stat-label">Win Rate</div></div>
+<div class="stat-card"><div class="stat-value" style="font-size:20px;color:var(--win)">Billikens</div><div class="stat-label">Best Pick (102-77)</div></div>
+<div class="stat-card"><div class="stat-value" style="font-size:20px;color:var(--loss)">Cougars</div><div class="stat-label">Only Miss (BYU)</div></div></div>`;
+  h+=`<div class="round-section"><div class="round-label">All Mascot Picks</div><div class="matchup-grid">`;
+  J.forEach(j=>{
+    const won=j.result==='W';
+    h+=`<div class="mc" style="${won?'border-color:rgba(52,211,153,0.3)':'border-color:rgba(248,113,113,0.3)'}">
+<div class="mc-header"><span class="mc-time" style="font-size:13px;color:#f472b6">${j.mascot}</span><span class="mc-region-tag tag-${j.region}">${j.region}</span><span class="mc-status ${won?'final':'pending'}" style="${won?'':'color:var(--loss);background:var(--loss-bg)'}">${won?'✓ Won':'✗ Lost'}</span></div>
+<div class="tr${won?' w':''}"><span class="seed">${j.seed}</span><span class="tn">${j.team}</span><span class="score">${j.score.split('-')[0]}</span></div>
+<div class="tr${won?'':' w'}"><span class="seed">${j.oppSeed}</span><span class="tn">${j.opp}</span><span class="score">${j.score.split('-')[1]}</span></div>
+</div>`;
+  });
+  h+=`</div></div>`;
+  return h;
+}
+
 const ct=document.getElementById('content');
-function go(r){let h='<div class="panel active">';if(r==='schedule')h+=renderSchedule();else if(r==='overview')h+=renderOverview();else if(r==='final4')h+=renderF4();else h+=renderRegion(r);h+='</div>';ct.innerHTML=h;}
+function go(r){let h='<div class="panel active">';if(r==='schedule')h+=renderSchedule();else if(r==='overview')h+=renderOverview();else if(r==='final4')h+=renderF4();else if(r==='jasmeen')h+=renderJasmeen();else h+=renderRegion(r);h+='</div>';ct.innerHTML=h;}
 document.getElementById('nav').addEventListener('click',e=>{const b=e.target.closest('.nav-btn');if(!b)return;document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');go(b.dataset.region);});
 go('schedule');
 </script>
