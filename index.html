@@ -114,11 +114,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   <div class="header-eyebrow">March Madness 2026 • Bracket Challenge</div>
   <h1>Lun & Klun Offense</h1>
   <div class="header-sub">Indianapolis • April 4–6 • Lucas Oil Stadium</div>
-  <div class="champion-banner"><span class="trophy">🏆</span><div><div class="champ-text">Champion Pick</div><div class="champ-name">(1) Michigan</div></div></div>
+  <div class="champion-banner"><span class="trophy">🏆</span><div><div class="champ-text">2026 National Champions</div><div class="champ-name">(1) Michigan 69-63</div></div></div>
 </div>
 <nav class="nav" id="nav">
-  <button class="nav-btn active" data-region="schedule">Schedule</button>
-  <button class="nav-btn" data-region="overview">Overview</button>
+  <button class="nav-btn" data-region="schedule">Schedule</button>
+  <button class="nav-btn active" data-region="overview">Overview</button>
   <button class="nav-btn" data-region="east">East</button>
   <button class="nav-btn" data-region="south">South</button>
   <button class="nav-btn" data-region="west">West</button>
@@ -194,9 +194,9 @@ const S=[
 {day:"Sat, Mar 28",time:"8:45 PM",tv:"CBS",rg:"west",rd:"Elite 8",t:{s:1,n:"Arizona"},b:{s:2,n:"Purdue"},pk:0,st:"final",sc:[79,64]},
 {day:"Sun, Mar 29",time:"2:15 PM",tv:"CBS",rg:"midwest",rd:"Elite 8",t:{s:1,n:"Michigan"},b:{s:6,n:"Tennessee"},pk:0,st:"final",sc:[95,62]},
 {day:"Sun, Mar 29",time:"4:45 PM",tv:"CBS",rg:"east",rd:"Elite 8",t:{s:2,n:"UConn"},b:{s:1,n:"Duke"},pk:null,st:"final",sc:[73,72]},
-{day:"Sat, Apr 4",time:"6:09 PM",tv:"TBS",rg:"east",rd:"Final Four",t:{s:2,n:"UConn"},b:{s:3,n:"Illinois"},pk:null,st:"pending",sc:null},
-{day:"Sat, Apr 4",time:"8:49 PM",tv:"TBS",rg:"west",rd:"Final Four",t:{s:1,n:"Arizona"},b:{s:1,n:"Michigan"},pk:1,st:"pending",sc:null},
-{day:"Mon, Apr 6",time:"8:30 PM",tv:"TBS",rg:"midwest",rd:"Championship",t:{s:0,n:"TBD"},b:{s:0,n:"TBD"},pk:null,st:"pending",sc:null}
+{day:"Sat, Apr 4",time:"6:09 PM",tv:"TBS",rg:"east",rd:"Final Four",t:{s:2,n:"UConn"},b:{s:3,n:"Illinois"},pk:null,st:"final",sc:[71,62]},
+{day:"Sat, Apr 4",time:"8:49 PM",tv:"TBS",rg:"west",rd:"Final Four",t:{s:1,n:"Arizona"},b:{s:1,n:"Michigan"},pk:1,st:"final",sc:[73,91]},
+{day:"Mon, Apr 6",time:"8:30 PM",tv:"TBS",rg:"midwest",rd:"Championship",t:{s:1,n:"Michigan"},b:{s:2,n:"UConn"},pk:0,st:"final",sc:[69,63]}
 ];
 const R={
 east:{name:"East Region",site:"Newark, NJ",color:"east",champ:{s:5,n:"St. John's"},rounds:[
@@ -259,19 +259,99 @@ h+=`<div class="bracket-path bg-${r.color}"><span class="path-label"><strong cla
 return h;}
 
 function renderOverview(){
-  let ups=0,ch=0,tot=0,bs=0,bt='';
-  Object.values(R).forEach(r=>r.rounds.forEach(rd=>rd.games.forEach(g=>{const w=g.w===0?g.t:g.b,l=g.w===0?g.b:g.t;tot++;if(w.s<=l.s)ch++;else{ups++;if(w.s>bs){bs=w.s;bt=w.n;}}})));
-  let cor=0,wr=0;S.filter(g=>g.st==='final'&&g.sc).forEach(g=>{const a=g.sc[0]>g.sc[1]?0:1;if(a===g.pk)cor++;else wr++;});
-  let h=`<div class="stats-bar">
-<div class="stat-card"><div class="stat-value c-gold">Michigan</div><div class="stat-label">Champion Pick</div></div>
-<div class="stat-card"><div class="stat-value" style="color:var(--win)">${cor}</div><div class="stat-label">Correct So Far</div></div>
-<div class="stat-card"><div class="stat-value" style="color:var(--loss)">${wr}</div><div class="stat-label">Wrong So Far</div></div>
-<div class="stat-card"><div class="stat-value">${ups}</div><div class="stat-label">Upset Picks</div></div>
-<div class="stat-card"><div class="stat-value">${Math.round(ch/tot*100)}%</div><div class="stat-label">Chalk Rate</div></div>
-<div class="stat-card"><div class="stat-value" style="font-size:20px">(${bs}) ${bt}</div><div class="stat-label">Biggest Upset Pick</div></div></div>`;
-  h+=`<div class="round-section"><div class="round-label">Final Four Teams</div><div class="matchup-grid">${['east','south','west','midwest'].map(k=>{const c=R[k].champ;return`<div class="mc bg-${k}"><div class="tr w" style="padding:16px"><span class="seed">${c.s}</span><span class="tn" style="font-size:17px;font-weight:700">${c.n}</span><span class="mc-region-tag tag-${k}">${k}</span></div></div>`;}).join('')}</div></div>`;
-  h+=`<div class="round-section"><div class="round-label">Region Champion Paths</div>${['east','south','west','midwest'].map(k=>{const r=R[k],d=[];r.rounds.forEach(rd=>rd.games.forEach(g=>{const w=g.w===0?g.t:g.b,l=g.w===0?g.b:g.t;if(w.n===r.champ.n)d.push(`(${l.s}) ${l.n}`);}));return`<div class="bracket-path bg-${k}" style="margin-bottom:8px"><span class="path-label"><strong class="c-${k}">(${r.champ.s}) ${r.champ.n}</strong></span>${d.map(t=>`<span class="path-arrow">beat</span><span class="path-team">${t}</span>`).join('')}</div>`;}).join('')}</div>`;
-  return h;}
+  const rounds=[
+    {name:"Round of 64",correct:28,total:32,pts:1},
+    {name:"Round of 32",correct:12,total:16,pts:2},
+    {name:"Sweet 16",correct:3,total:8,pts:4},
+    {name:"Elite 8",correct:2,total:4,pts:8},
+    {name:"Final Four",correct:1,total:2,pts:16},
+    {name:"Championship",correct:1,total:1,pts:32}
+  ];
+  const totalCorrect=rounds.reduce((a,r)=>a+r.correct,0);
+  const totalGames=rounds.reduce((a,r)=>a+r.total,0);
+  const totalPts=rounds.reduce((a,r)=>a+r.correct*r.pts,0);
+  const maxPts=rounds.reduce((a,r)=>a+r.total*r.pts,0);
+  const pct=Math.round(totalCorrect/totalGames*100);
+  // ~4.9% picked Michigan champion, getting champ right + 47/63 ≈ 93rd percentile
+  const percentile=93;
+
+  let h=`<div style="text-align:center;margin-bottom:24px;padding:20px;background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(124,108,255,0.06));border:1px solid rgba(255,215,0,0.2);border-radius:12px">
+<div style="font-size:48px;margin-bottom:4px">🏆</div>
+<div style="font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:4px;text-transform:uppercase;color:var(--text-muted)">2026 National Champions</div>
+<div style="font-family:'Oswald',sans-serif;font-size:42px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold)">Michigan 69, UConn 63</div>
+<div style="font-family:'Source Code Pro',monospace;font-size:13px;color:var(--win);margin-top:8px;letter-spacing:1px">✓ WE CALLED IT — CHAMPION PICK CORRECT</div>
+</div>`;
+
+  h+=`<div class="stats-bar">
+<div class="stat-card" style="border-color:rgba(255,215,0,0.3)"><div class="stat-value c-gold">${totalCorrect}/${totalGames}</div><div class="stat-label">Total Correct</div></div>
+<div class="stat-card" style="border-color:rgba(52,211,153,0.3)"><div class="stat-value" style="color:var(--win)">${pct}%</div><div class="stat-label">Accuracy</div></div>
+<div class="stat-card" style="border-color:rgba(124,108,255,0.3)"><div class="stat-value" style="color:var(--midwest)">${totalPts}</div><div class="stat-label">Points (1-2-4-8-16-32)</div></div>
+<div class="stat-card" style="border-color:rgba(255,107,53,0.3)"><div class="stat-value" style="color:var(--east)">~${percentile}rd</div><div class="stat-label">Est. Percentile</div></div>
+</div>`;
+
+  h+=`<div class="round-section"><div class="round-label">Performance by Round</div><div class="matchup-grid">`;
+  rounds.forEach(r=>{
+    const rpct=Math.round(r.correct/r.total*100);
+    const col=rpct>=75?'var(--win)':rpct>=50?'var(--gold)':'var(--loss)';
+    h+=`<div class="mc"><div class="tr w" style="padding:14px;justify-content:space-between">
+<span class="tn" style="font-weight:600">${r.name}</span>
+<span style="font-family:'Source Code Pro',monospace;font-size:14px;font-weight:700;color:${col}">${r.correct}/${r.total} <span style="font-size:11px;color:var(--text-dim)">(${rpct}%)</span></span>
+<span style="font-family:'Source Code Pro',monospace;font-size:12px;color:var(--text-muted)">${r.correct*r.pts} pts</span>
+</div></div>`;
+  });
+  h+=`</div></div>`;
+
+  h+=`<div class="round-section"><div class="round-label">Our Final Four Picks vs Reality</div><div class="matchup-grid">`;
+  const f4picks=[
+    {team:"St. John's",seed:5,region:"east",actual:"UConn (2)",result:false},
+    {team:"Houston",seed:2,region:"south",actual:"Illinois (3)",result:false},
+    {team:"Arizona",seed:1,region:"west",actual:"Arizona (1)",result:true},
+    {team:"Michigan",seed:1,region:"midwest",actual:"Michigan (1)",result:true}
+  ];
+  f4picks.forEach(p=>{
+    h+=`<div class="mc ${p.result?'bg-'+p.region:''}" style="${!p.result?'border-color:rgba(248,113,113,0.2)':''}">
+<div class="tr" style="padding:14px;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:8px"><span class="seed">${p.seed}</span><span class="tn" style="font-weight:700">${p.team}</span><span class="mc-region-tag tag-${p.region}">${p.region}</span></div>
+<span class="pick-badge ${p.result?'correct':'wrong'}">${p.result?'✓ Correct':'✗ Missed'}</span>
+</div>
+<div style="padding:4px 14px 10px;font-family:'Source Code Pro',monospace;font-size:11px;color:var(--text-muted)">Actual: ${p.actual}</div>
+</div>`;
+  });
+  h+=`</div></div>`;
+
+  h+=`<div class="round-section"><div class="round-label">Michigan's Championship Run</div>
+<div class="bracket-path bg-midwest" style="margin-top:0">
+<span class="path-label"><strong class="c-gold">🏆 (1) Michigan</strong></span>
+${['Howard 101-80','Saint Louis 95-72','Alabama 90-77','Tennessee 95-62','Arizona 91-73','UConn 69-63'].map(t=>`<span class="path-arrow">→</span><span class="path-team">${t}</span>`).join('')}
+</div></div>`;
+
+  h+=`<div class="round-section"><div class="round-label">Key Misses</div><div class="matchup-grid">`;
+  const misses=[
+    {pick:"Wisconsin",actual:"High Point 83-82",rd:"R64",region:"west"},
+    {pick:"BYU",actual:"Texas 79-71",rd:"R64",region:"west"},
+    {pick:"Clemson",actual:"Iowa 67-61",rd:"R64",region:"south"},
+    {pick:"Georgia",actual:"Saint Louis 102-77",rd:"R64",region:"midwest"},
+    {pick:"Gonzaga",actual:"Texas 74-68",rd:"R32",region:"west"},
+    {pick:"Kentucky",actual:"Iowa St. 82-63",rd:"R32",region:"midwest"},
+    {pick:"Virginia",actual:"Tennessee 79-72",rd:"R32",region:"midwest"},
+    {pick:"Florida",actual:"Iowa 73-72",rd:"R32",region:"south"},
+    {pick:"Texas Tech",actual:"Alabama 90-65",rd:"R32",region:"midwest"},
+    {pick:"St. John's",actual:"Duke 80-75",rd:"S16",region:"east"},
+    {pick:"Houston",actual:"Illinois 65-55",rd:"S16",region:"south"},
+    {pick:"Michigan St.",actual:"UConn 67-63",rd:"S16",region:"east"},
+    {pick:"Iowa St.",actual:"Tennessee 76-62",rd:"S16",region:"midwest"},
+    {pick:"Nebraska",actual:"Iowa 77-71",rd:"S16",region:"south"},
+  ];
+  misses.forEach(m=>{
+    h+=`<div class="mc" style="border-color:rgba(248,113,113,0.15)"><div class="tr" style="padding:10px 14px;justify-content:space-between">
+<span class="tn">Picked <strong>${m.pick}</strong></span>
+<span style="font-family:'Source Code Pro',monospace;font-size:11px;color:var(--loss)">${m.rd}</span>
+<span class="mc-region-tag tag-${m.region}">${m.region}</span>
+</div><div style="padding:2px 14px 8px;font-family:'Source Code Pro',monospace;font-size:11px;color:var(--text-muted)">Lost to: ${m.actual}</div></div>`;
+  });
+  h+=`</div></div>`;
+  return h;
+}
 
 function renderF4(){return`<div class="region-title-bar"><span class="region-title c-gold">Final Four & Championship</span><span class="region-site">Lucas Oil Stadium • Indianapolis</span></div>
 <div class="f4-layout"><div class="f4-semis">
@@ -316,7 +396,7 @@ function renderJasmeen(){
 const ct=document.getElementById('content');
 function go(r){let h='<div class="panel active">';if(r==='schedule')h+=renderSchedule();else if(r==='overview')h+=renderOverview();else if(r==='final4')h+=renderF4();else if(r==='jasmeen')h+=renderJasmeen();else h+=renderRegion(r);h+='</div>';ct.innerHTML=h;}
 document.getElementById('nav').addEventListener('click',e=>{const b=e.target.closest('.nav-btn');if(!b)return;document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');go(b.dataset.region);});
-go('schedule');
+go('overview');
 </script>
 </body>
 </html>
